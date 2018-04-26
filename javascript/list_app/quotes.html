@@ -12,9 +12,33 @@
 <body>
   <div id="quotes"></div>
   <script type="text/babel">
+
+    class App extends React.Component {
+      constructor() {
+        super();
+        this.state = { quotes: [] };
+      }
+
+      componentDidMount() {
+        const quotesApi = 'https://gist.githubusercontent.com/anonymous/8f61a8733ed7fa41c4ea/raw/1e90fd2741bb6310582e3822f59927eb535f6c73/quotes.json';
+        fetch(quotesApi)
+        .then(response => response.json())
+        .then(quotes => {
+          this.setState({ quotes });
+        });
+      }
+      render() {
+        return (
+          <div>
+            <h1>Quotes</h1>
+          </div>
+        )
+      }
+    }
+
     ReactDOM.render(
       <div>
-        <h1>Quotes</h1>
+        <App />
       </div>,
       document.getElementById('quotes')
     );
