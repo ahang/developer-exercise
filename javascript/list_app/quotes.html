@@ -27,13 +27,61 @@
           this.setState({ quotes });
         });
       }
+
       render() {
         return (
           <div>
             <h1>Quotes</h1>
+            <Quotes quotes={this.state.quotes}/>
           </div>
         )
       }
+    }
+
+    const Quotes = ({ quotes }) => {
+      console.log(quotes)
+      const quoteItems = quotes.map((quote, index) => {
+        return (
+          <Quote key={index} quote={quote} />
+        )
+      })
+
+      if(!quotes) {
+        return <div>Loading...</div>
+      }
+
+      return (
+        <div>
+          <p>Quote</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>Context</th>
+                <th>Quote</th>
+                <th>Theme</th>
+              </tr>
+            </thead>
+            <tbody>
+              {quoteItems}
+            </tbody>
+          </table>
+        </div>          
+      )
+    }
+
+    const Quote = ({ quote }) => {
+      if(!quote) {
+        return <div>Loading..</div>
+      }
+      return (
+        <tr>
+          <td>{quote.source}</td>
+          <td>{quote.context}</td>
+          <td>{quote.quote}</td>
+          <td>{quote.theme}</td>
+        </tr>
+      )
     }
 
     ReactDOM.render(
