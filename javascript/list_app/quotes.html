@@ -16,7 +16,14 @@
     class App extends React.Component {
       constructor() {
         super();
-        this.state = { quotes: [] };
+        this.state = { 
+          quotes: [],
+          paginatedQuotes: [],
+          pageSize: 7,
+          totalItems: 0,
+          totalPages: 0,
+          currentPage: 1
+        };
       }
 
       componentDidMount() {
@@ -24,22 +31,57 @@
         fetch(quotesApi)
         .then(response => response.json())
         .then(quotes => {
-          this.setState({ quotes });
+          const roundQuotes = Math.ceil(quotes.length / this.state.pageSize);
+          this.setState({ 
+            quotes,
+            totalPages: roundQuotes,
+            totalItems: quotes.length
+          });
+          this.handlePagination();
+          this.setState({ currentPage: this.state.currentPage + 1 });
         });
+      }
+
+      handlePagination() {
+        let { currentPage } = this.state;
+        const { quotes, paginatedQuotes, pageSize } = this.state;
+        --currentPage;
+        const pageQuotes = quotes.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+        this.setState({ paginatedQuotes: pageQuotes })
+      }
+
+      handleNextClick() {
+        this.setState({ currentPage: this.state.currentPage + 1 });
+        this.handlePagination()
+      }
+
+      handleBackClick() {
+        this.setState({ currentPage: this.state.currentPage - 1 });
+        this.handlePagination();
       }
 
       render() {
         return (
           <div>
             <h1>Quotes</h1>
-            <Quotes quotes={this.state.quotes}/>
+            <button
+              disabled={this.state.currentPage === 1}
+              onClick={this.handleBackClick.bind(this)}>
+              Back
+            </button>
+            <button 
+              style={{ marginLeft: 50 }}
+              disabled={this.state.currentPage === this.state.totalPages}
+              onClick={this.handleNextClick.bind(this)}>
+              Next
+            </button>
+            <Quotes quotes={this.state.paginatedQuotes}/>
           </div>
         )
       }
     }
 
     const Quotes = ({ quotes }) => {
-      console.log(quotes)
       const quoteItems = quotes.map((quote, index) => {
         return (
           <Quote key={index} quote={quote} />
