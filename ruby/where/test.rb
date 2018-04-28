@@ -1,5 +1,19 @@
 require 'minitest/autorun'
 
+class Array
+  def where(args)
+    result = self
+    args.each do |key, value|
+      if value.is_a? Regexp
+        result.select! { |obj| args[key] =~ obj[key] }
+      else
+        result.select! { |obj| obj[key] == args[key] }
+      end
+    end
+    return result
+  end
+end
+
 class WhereTest < Minitest::Test
   def setup
     @boris   = {:name => 'Boris The Blade', :quote => "Heavy is good. Heavy is reliable. If it doesn't work you can always hit them.", :title => 'Snatch', :rank => 4}
@@ -11,7 +25,7 @@ class WhereTest < Minitest::Test
   end
 
   def test_where_with_exact_match
-    assert_equal [@wolf], @fixtures.where(:name => 'The Wolf'),
+    assert_equal [@wolf], @fixtures.where(:name => 'The Wolf')
   end
 
   def test_where_with_partial_match
