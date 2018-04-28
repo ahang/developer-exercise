@@ -44,12 +44,132 @@ class Deck
 end
 
 class Hand
-  attr_accessor :cards
+  attr_accessor :cards, :total
 
   def initialize
     @cards = []
   end
+
+  def deal_hand(deck)
+    @cards << deck.deal_card
+  end
+
+  def display_hand
+    @total = 0
+    @cards.each do |card|
+      printf "#{card.name} of #{card.suite} "
+      if card.value.kind_of?(Array)
+        if @total + card.value[0] > 21
+          @total += card.value[1]
+        else
+          @total += card.value[0]
+        end
+      else 
+        @total += card.value
+      end
+    end
+    puts "\nTotal: #{@total}"
+  end
+
+  def display_dealer
+    puts "#{cards[0].name} of #{cards[0].suite}"
+  end
+
+  def options
+    input = ""
+    while (input != "H" && input != "S" ) do
+      puts "Stand or Hit? Input S or H"
+      input = gets.chomp.upcase
+    end
+    return input
+  end
 end
+
+class Blackjack
+  attr_reader :deck, :player, :dealer
+
+  def initialize
+    @deck = Deck.new
+    @player = Hand.new
+    @dealer = Hand.new
+    2.times { player.deal_hand(@deck) }
+    2.times { dealer.deal_hand(@deck) }
+  end
+
+  def start
+    puts "You have been dealt: "
+    @player.display_hand
+    puts "Dealer has: "
+    @dealer.display_dealer
+    while @player.options != "S" do
+      puts "You decided to Hit"
+      player.deal_hand(@deck)
+      puts "Your card"
+      @player.display_hand
+      check_player_bust
+    end
+    puts "You chosen to Stay"
+    puts "Dealer Cards: "
+    @dealer.display_hand
+    check_dealer_hand
+    check_winner
+  end
+
+  def check_dealer_hand
+    if @dealer.total < 17
+      @dealer.deal_hand(@deck)
+      puts "Dealer Cards"
+      @dealer.display_hand
+    end
+    if @dealer.total > 21
+      puts "Dealer busted! You win"
+      new_game
+    end
+    if @dealer.total == 21
+      puts "Dealer wins"
+      new_game
+    end
+  end
+
+  def check_player_bust
+    if @player.total > 21
+      puts "You Bust! Dealer Wins"
+      new_game
+    elsif @player.total == 21
+      puts "Winner Winner, Chicken Dinner. You Won!"
+      new_game
+    end
+  end
+
+  def check_winner
+    if @player.total > @dealer.total
+      puts "You win"
+      new_game
+    else
+      puts "House wins"
+      new_game
+    end
+  end
+
+  def new_game
+    new_game = ""
+    while (new_game != "Y" && new_game != "N") do
+      puts "Try again? Input Y or N"
+      new_game = gets.chomp.upcase
+    end
+    if new_game == "N"
+      puts "Closing Game"
+      exit(0)
+    else 
+      puts "Starting new game..."
+      newgame = Blackjack.new
+      newgame.start
+    end
+  end
+end
+
+blackjack = Blackjack.new
+blackjack.start
 
 require 'test/unit'
 
@@ -81,11 +201,29 @@ class DeckTest < Test::Unit::TestCase
   
   def test_dealt_card_should_not_be_included_in_playable_cards
     card = @deck.deal_card
-    assert(@deck.playable_cards.include?(card))
+    assert(!@deck.playable_cards.include?(card))
   end
 
   def test_shuffled_deck_has_52_playable_cards
     @deck.shuffle
     assert_equal @deck.playable_cards.size, 52
+  end
+end
+
+class BlackjackTest < Test::Unit::TestCase
+  def setup
+    @blackjack = Blackjack.new
+  end
+
+  def test_new_game_player_initialized
+    assert(@blackjack.player)
+  end
+
+  def test_new_game_dealer_initialized
+    assert(@blackjack.dealer)
+  end
+
+  def test_new_game_deck_initialized
+    assert(@blackjack.deck)
   end
 end
